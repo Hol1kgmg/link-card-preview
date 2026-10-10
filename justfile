@@ -48,3 +48,29 @@ scan-staged:
 # Serve markdown at http://localhost:8080
 docs *ARGS:
     markserv . -p 8080 -a 0.0.0.0 --browser=false {{ARGS}}
+
+# --- web/ (card link checker) ---
+
+# Install web dependencies
+web-install:
+    cd web && pnpm install
+
+# Dev server: Vite (5173, proxies /api) + wrangler (8787)
+web-dev:
+    cd web && (pnpm exec wrangler dev & pnpm dev; kill %1)
+
+# Type-check, lint, test
+web-check:
+    cd web && pnpm exec tsc -p . && pnpm lint && pnpm test
+
+# Format web sources
+web-format:
+    cd web && pnpm format
+
+# Build SPA then run the Worker locally at http://localhost:8787
+web-preview:
+    cd web && pnpm preview
+
+# Build and deploy to Cloudflare Workers
+web-deploy:
+    cd web && pnpm deploy

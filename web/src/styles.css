@@ -1,0 +1,179 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  --border: #8884;
+  --ok: #2e8b57;
+  --warn: #d08a00;
+  --ng: #c0392b;
+}
+body {
+  margin: 0;
+}
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+h1 {
+  font-size: 1.4rem;
+}
+h2 {
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.url-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.url-form input {
+  flex: 1;
+  min-width: 240px;
+  padding: 8px;
+  font-size: 1rem;
+}
+.url-form button {
+  padding: 8px 16px;
+  font-size: 1rem;
+}
+.url-form .error {
+  flex-basis: 100%;
+}
+.error {
+  color: var(--ng);
+  margin: 4px 0;
+}
+.meta {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+.result {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0;
+}
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #fff;
+}
+.badge-ok {
+  background: var(--ok);
+}
+.badge-warn {
+  background: var(--warn);
+}
+.badge-ng {
+  background: var(--ng);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 500px;
+}
+.card-summary,
+.card-oembed {
+  display: flex;
+}
+.card-image-wide {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.91 / 1;
+  object-fit: cover;
+}
+.card-large .card-image-wide {
+  aspect-ratio: 2 / 1;
+}
+.card-image-square {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  flex: none;
+}
+.card-noimage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #8882;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+.card-body {
+  padding: 8px 12px;
+  min-width: 0;
+}
+.card-domain {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: lowercase;
+}
+.card-title {
+  font-weight: 600;
+  margin: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-desc {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.issues {
+  padding-left: 0;
+  list-style: none;
+}
+.issues li {
+  padding: 6px 10px;
+  border-left: 3px solid;
+  margin: 6px 0;
+}
+.issue-ng {
+  border-color: var(--ng);
+}
+.issue-warn {
+  border-color: var(--warn);
+}
+.hint {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+.fallbacks {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+details summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.tags {
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+.tags th {
+  text-align: left;
+  white-space: nowrap;
+  padding: 2px 8px 2px 0;
+  vertical-align: top;
+}
+.tags td {
+  word-break: break-all;
+}
