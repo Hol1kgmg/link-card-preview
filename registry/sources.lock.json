@@ -38,6 +38,25 @@
       },
       "subdir": "."
     },
+    "hol1kgmg": {
+      "filter": {
+        "maxDepth": null,
+        "nameRegex": null
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "Hol1kgmg",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
     "japanese-tech-writing": {
       "filter": {
         "maxDepth": 0,
@@ -100,16 +119,16 @@
     "pins": {
       "anthropic": {
         "branch": "main",
-        "hash": "sha256-PRBkTEGNwT73EFCvuTprzIBGiG+UGSYiaCkY7Ji13us=",
+        "hash": "sha256-+UIqBnzyeIOvJSKYaDaE3GYPEpLw7qQqyUw5S971AfU=",
         "repository": {
           "owner": "anthropics",
           "repo": "skills",
           "type": "GitHub"
         },
-        "revision": "8a1541c4a3ffa5a20a5a91de0dcf3f0bab1d1ef4",
+        "revision": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/anthropics/skills/archive/8a1541c4a3ffa5a20a5a91de0dcf3f0bab1d1ef4.tar.gz"
+        "url": "https://github.com/anthropics/skills/archive/dbd4588f9e1033efb41dad4bef2f7947c8993d44.tar.gz"
       },
       "cognitive-rhythm-writing": {
         "branch": "main",
@@ -122,6 +141,19 @@
         "submodules": false,
         "type": "Git",
         "url": null
+      },
+      "hol1kgmg": {
+        "branch": "main",
+        "hash": "sha256-PdSdE9fquZO7tgW1ZOxRxahwoT4sgGDU7glb1xHSw2c=",
+        "repository": {
+          "owner": "Hol1kgmg",
+          "repo": "skills",
+          "type": "GitHub"
+        },
+        "revision": "6802a0cb19decb79206e547f5d30f3080b8f2264",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/Hol1kgmg/skills/archive/6802a0cb19decb79206e547f5d30f3080b8f2264.tar.gz"
       },
       "japanese-tech-writing": {
         "branch": "main",
@@ -137,16 +169,16 @@
       },
       "vercel": {
         "branch": "main",
-        "hash": "sha256-keTOvGsaAaoRRIIsQkUVMUeTlFJDwDyPdWCUyAE3BTU=",
+        "hash": "sha256-tiukbcseL+XExjMljyMOHH4Q4/5j14DFCqXmwBvVjHI=",
         "repository": {
           "owner": "vercel",
           "repo": "ai",
           "type": "GitHub"
         },
-        "revision": "a470e0dee3cfa0df918cc3a41d54b69d146058f8",
+        "revision": "5a3c13cbb00de3b641af7b34bded5cfeaef286d5",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/vercel/ai/archive/a470e0dee3cfa0df918cc3a41d54b69d146058f8.tar.gz"
+        "url": "https://github.com/vercel/ai/archive/5a3c13cbb00de3b641af7b34bded5cfeaef286d5.tar.gz"
       },
       "web-quality": {
         "branch": "main",

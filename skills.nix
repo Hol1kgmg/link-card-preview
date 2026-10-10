@@ -23,5 +23,9 @@
   "seo"
   "best-practices"
 
+  # Hol1kgmg/skills（必要なリポジトリで有効化する）
+  # "dependabot-review"
+  # "speckit-explain"
+
   # ./skills（独自）
 ]

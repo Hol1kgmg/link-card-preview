@@ -47,6 +47,8 @@ direnv allow
 
 エージェント用スキルは `skills.nix` の宣言から devShell 起動時に `.agents/skills` へ同期されます
 （`just skills` / `just skills-list` / `just skills-update`）。独自スキルは [skills/](skills/) に置きます。
+エージェント用のルール（`.claude/rules/*.md`）も同じ流儀で、`rules.nix` の宣言から `.agents/rules` へ同期されます
+（`just rules` / `just rules-list` / `just rules-update`、取得元は [registry/rules/](registry/rules/)）。独自ルールは [rules/](rules/) に置きます。
 
 ## タスク
 
