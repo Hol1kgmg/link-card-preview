@@ -44,7 +44,6 @@ export type CheckResponse = {
 
 export type ErrorResponse = { error: { code: string; message: string } };
 
-/** parseMeta の出力。og:/twitter: は name/property どちらでも拾う */
 export type ParsedMeta = {
   og: Record<string, string>;
   twitter: Record<string, string>;

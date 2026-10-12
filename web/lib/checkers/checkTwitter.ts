@@ -2,14 +2,12 @@ import type { CheckResponse, ImageInfo, Issue } from "../types";
 import { TWITTER } from "./rules";
 import { summarize } from "./summarize";
 
-/** twitter:* → og:* のフォールバック対応表 */
 const FALLBACK: Record<string, string> = {
   "twitter:title": "og:title",
   "twitter:description": "og:description",
   "twitter:image": "og:image",
 };
 
-/** Xカードが実際に使う値を解決する（twitter:* 優先、無ければ og:*） */
 export function resolveTwitter(twitter: Record<string, string>, og: Record<string, string>) {
   const fallbacks: string[] = [];
   const get = (key: string): string | undefined => {

@@ -1,6 +1,5 @@
 import type { ParsedMeta } from "../types";
 
-/** HTMLRewriter で <head> 内の meta / link を収集する。最初に出現した値を優先 */
 export async function parseMeta(html: string, baseUrl: string): Promise<ParsedMeta> {
   const out: ParsedMeta = { og: {}, twitter: {}, oembedEndpoint: null };
 
@@ -29,7 +28,7 @@ export async function parseMeta(html: string, baseUrl: string): Promise<ParsedMe
       },
     });
 
-  // ハンドラは本文を消費したときに走るので、変換結果を読み切る
+  // 戻り値は不要だが、本文を消費しないとハンドラが呼ばれない
   await rewriter.transform(new Response(html)).text();
   return out;
 }

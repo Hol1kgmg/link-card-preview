@@ -14,7 +14,7 @@ export class UpstreamError extends Error {
   }
 }
 
-/** リダイレクトを手動で追い（毎回許可ドメインを確認）、HTML を先頭 2MB まで読む */
+// redirect: "follow" にしないのは、移動先ごとに許可ドメインを検査するため（SSRF 対策）
 export async function fetchHtml(
   start: URL,
   allowed: Set<string>,
