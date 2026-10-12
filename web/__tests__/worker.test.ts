@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
-import { handleCheck, type HostConfig } from "../worker";
+import { handleCheck, type HostConfig, selfAwareFetch } from "../worker";
 import full from "./fixtures/full.html?raw";
 
 // テストは allowed-hosts.json の実ドメインに依存しないよう許可リストを固定する
@@ -105,5 +105,22 @@ describe("POST /api/check", () => {
       bytes: PNG_1x1.byteLength,
     });
     expect(body.ogp.issues.map((i) => i.code)).toContain("OG_IMAGE_SMALL");
+  });
+
+  it("serves its own host from ASSETS instead of the network", async () => {
+    const calls = mockFetch({});
+    const req = new Request("https://app.local/api/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: "https://app.local/" }),
+    });
+    const assets = { fetch: async () => html(`<html><head><title>me</title></head></html>`) };
+    const res = await handleCheck(
+      req,
+      { hosts: ["app.local"], assetHosts: [] },
+      selfAwareFetch(req, { ASSETS: assets as unknown as Fetcher }),
+    );
+    expect(res.status).toBe(200);
+    expect(calls).toEqual([]);
   });
 });

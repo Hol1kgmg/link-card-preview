@@ -7,7 +7,11 @@ const TIMEOUT_MS = 5000;
 // ponytail: 画像ヘッダ判定に十分な先頭バイト数。SVG など末尾まで要る形式は width/height が取れないまま返す
 const HEAD_BYTES = 64 * 1024;
 
-export async function fetchImage(url: string, allowed: Set<string>): Promise<ImageInfo> {
+export async function fetchImage(
+  url: string,
+  allowed: Set<string>,
+  fetchFn: typeof fetch = fetch,
+): Promise<ImageInfo> {
   const info: ImageInfo = { url, reachable: false };
   let target: URL;
   try {
@@ -18,7 +22,7 @@ export async function fetchImage(url: string, allowed: Set<string>): Promise<Ima
   if (!isAllowedHost(target.hostname, allowed)) return info;
 
   try {
-    const res = await fetch(target, {
+    const res = await fetchFn(target, {
       headers: { "User-Agent": USER_AGENT },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

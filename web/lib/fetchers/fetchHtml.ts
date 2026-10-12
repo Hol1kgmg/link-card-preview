@@ -18,12 +18,13 @@ export class UpstreamError extends Error {
 export async function fetchHtml(
   start: URL,
   allowed: Set<string>,
+  fetchFn: typeof fetch = fetch,
 ): Promise<{ html: string; finalUrl: string }> {
   let url = start;
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await fetchFn(url, {
         redirect: "manual",
         headers: { "User-Agent": USER_AGENT, Accept: "text/html" },
         signal: AbortSignal.timeout(TIMEOUT_MS),

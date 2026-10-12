@@ -14,6 +14,7 @@ export type OembedFetchResult =
 export async function fetchOembed(
   endpoint: string,
   allowed: Set<string>,
+  fetchFn: typeof fetch = fetch,
 ): Promise<OembedFetchResult> {
   let target: URL;
   try {
@@ -25,7 +26,7 @@ export async function fetchOembed(
 
   let res: Response;
   try {
-    res = await fetch(target, {
+    res = await fetchFn(target, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

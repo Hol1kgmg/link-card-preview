@@ -8,6 +8,12 @@ export function isAllowedHost(host: string, allowed: Set<string>): boolean {
   return false;
 }
 
+// localhost を許すのはビューワー自身が手元で動いているときだけ。本番 Worker からは手元に届かないため
+export function withLocalhost(allowed: Set<string>, selfHost: string): Set<string> {
+  const h = selfHost.toLowerCase();
+  return h === "localhost" || h === "127.0.0.1" ? new Set([...allowed, "localhost"]) : allowed;
+}
+
 export function validateUrl(
   input: string,
   allowed: Set<string>,
@@ -22,7 +28,8 @@ export function validateUrl(
     return { ok: false, code: "INVALID_URL", message: "http / https のみ対応しています" };
   }
   const host = url.hostname.toLowerCase();
-  if (host === "localhost" || host.endsWith(".localhost") || isIpLiteral(host)) {
+  const isLocal = host === "localhost" || host.endsWith(".localhost");
+  if (isIpLiteral(host) || (isLocal && !allowed.has("localhost"))) {
     return { ok: false, code: "INVALID_URL", message: "IPアドレスや localhost は指定できません" };
   }
   if (!isAllowedHost(host, allowed)) {

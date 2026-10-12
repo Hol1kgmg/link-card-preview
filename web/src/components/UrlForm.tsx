@@ -1,10 +1,13 @@
 import { useRef, useState } from "react";
 import allowedHosts from "../../allowed-hosts.json";
-import { isAllowedHost } from "../../lib/security/validateUrl";
+import { isAllowedHost, withLocalhost } from "../../lib/security/validateUrl";
 import { ClearIcon } from "./icons/ClearIcon";
 import { ClipboardIcon } from "./icons/ClipboardIcon";
 
-const ALLOWED_HOSTS = new Set(allowedHosts.hosts.map((h) => h.toLowerCase()));
+const ALLOWED_HOSTS = withLocalhost(
+  new Set(allowedHosts.hosts.map((h) => h.toLowerCase())),
+  location.hostname,
+);
 
 export function UrlForm({
   onSubmit,

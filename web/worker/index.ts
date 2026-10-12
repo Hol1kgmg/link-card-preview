@@ -5,7 +5,7 @@ import { fetchHtml, UpstreamError } from "../lib/fetchers/fetchHtml";
 import { fetchImage } from "../lib/fetchers/fetchImage";
 import { fetchOembed } from "../lib/fetchers/fetchOembed";
 import { parseMeta } from "../lib/parsers/parseMeta";
-import { validateUrl } from "../lib/security/validateUrl";
+import { validateUrl, withLocalhost } from "../lib/security/validateUrl";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
 import allowedHosts from "../allowed-hosts.json";
 
@@ -23,7 +23,22 @@ function error(code: string, message: string): Response {
   return Response.json(body, { status: STATUS_BY_CODE[code] ?? 500 });
 }
 
-export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts): Promise<Response> {
+type Env = { ASSETS: Fetcher };
+
+// Worker が自分の Custom Domain を fetch すると Cloudflare がオリジン直行扱いにして 522 になる
+export function selfAwareFetch(req: Request, env: Env): typeof fetch {
+  const self = new URL(req.url).host;
+  return (input, init) => {
+    const host = new URL(input instanceof Request ? input.url : String(input)).host;
+    return host === self ? env.ASSETS.fetch(input, init) : fetch(input, init);
+  };
+}
+
+export async function handleCheck(
+  req: Request,
+  cfg: HostConfig = allowedHosts,
+  fetchFn: typeof fetch = fetch,
+): Promise<Response> {
   let input: unknown;
   try {
     input = await req.json();
@@ -34,7 +49,10 @@ export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts):
     typeof input === "object" && input !== null ? (input as { url?: unknown }).url : undefined;
   if (typeof raw !== "string") return error("INVALID_URL", "url が指定されていません");
 
-  const pageHosts = new Set(cfg.hosts.map((h) => h.toLowerCase()));
+  const pageHosts = withLocalhost(
+    new Set(cfg.hosts.map((h) => h.toLowerCase())),
+    new URL(req.url).hostname,
+  );
   const assetHosts = new Set([...pageHosts, ...cfg.assetHosts.map((h) => h.toLowerCase())]);
 
   const v = validateUrl(raw, pageHosts);
@@ -43,7 +61,7 @@ export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts):
   let html: string;
   let finalUrl: string;
   try {
-    ({ html, finalUrl } = await fetchHtml(v.url, pageHosts));
+    ({ html, finalUrl } = await fetchHtml(v.url, pageHosts, fetchFn));
   } catch (e) {
     if (e instanceof UpstreamError) return error(e.code, e.message);
     throw e;
@@ -55,11 +73,13 @@ export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts):
   const twImageUrl = tw.image;
 
   const [ogImage, twImage, oembedResult] = await Promise.all([
-    ogImageUrl && /^https?:\/\//i.test(ogImageUrl) ? fetchImage(ogImageUrl, assetHosts) : undefined,
-    twImageUrl && twImageUrl !== ogImageUrl && /^https?:\/\//i.test(twImageUrl)
-      ? fetchImage(twImageUrl, assetHosts)
+    ogImageUrl && /^https?:\/\//i.test(ogImageUrl)
+      ? fetchImage(ogImageUrl, assetHosts, fetchFn)
       : undefined,
-    meta.oembedEndpoint ? fetchOembed(meta.oembedEndpoint, assetHosts) : null,
+    twImageUrl && twImageUrl !== ogImageUrl && /^https?:\/\//i.test(twImageUrl)
+      ? fetchImage(twImageUrl, assetHosts, fetchFn)
+      : undefined,
+    meta.oembedEndpoint ? fetchOembed(meta.oembedEndpoint, assetHosts, fetchFn) : null,
   ]);
 
   const body: CheckResponse = {
@@ -78,12 +98,12 @@ export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts):
 }
 
 export default {
-  async fetch(req) {
+  async fetch(req, env) {
     const { pathname } = new URL(req.url);
     if (pathname === "/api/check") {
       if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
-      return handleCheck(req);
+      return handleCheck(req, allowedHosts, selfAwareFetch(req, env));
     }
     return new Response("Not Found", { status: 404 });
   },
-} satisfies ExportedHandler;
+} satisfies ExportedHandler<Env>;

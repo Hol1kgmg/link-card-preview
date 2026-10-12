@@ -4,7 +4,7 @@ import { checkOgp } from "../../lib/checkers/checkOgp";
 import { checkTwitter } from "../../lib/checkers/checkTwitter";
 import { summarize } from "../../lib/checkers/summarize";
 import { parseMeta } from "../../lib/parsers/parseMeta";
-import { validateUrl } from "../../lib/security/validateUrl";
+import { validateUrl, withLocalhost } from "../../lib/security/validateUrl";
 import full from "../fixtures/full.html?raw";
 
 const codes = (r: { issues: { code: string }[] }) => r.issues.map((i) => i.code);
@@ -175,6 +175,13 @@ describe("validateUrl", () => {
       ok: false,
       code: "INVALID_URL",
     });
+    expect(
+      validateUrl("http://localhost:3000/", withLocalhost(allowed, "localhost")),
+    ).toMatchObject({ ok: true });
+    expect(validateUrl("http://127.0.0.1/", withLocalhost(allowed, "localhost"))).toMatchObject({
+      ok: false,
+    });
+    expect(withLocalhost(allowed, "example.com").has("localhost")).toBe(false);
     expect(validateUrl("https://evil.com/", allowed)).toMatchObject({
       ok: false,
       code: "DOMAIN_NOT_ALLOWED",
