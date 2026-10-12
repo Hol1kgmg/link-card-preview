@@ -34,7 +34,7 @@ export default function App() {
 
   return (
     <main className="app">
-      <h1>カードリンクチェッカー</h1>
+      <h1>カードリンクプレビュー</h1>
       <p className="lead">
         入力した URL が SNS や Slack でどう表示されるか（OGP・Xカード・oEmbed）を確認します。
       </p>
