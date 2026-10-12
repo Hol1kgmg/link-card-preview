@@ -1,4 +1,21 @@
 pre-commit:
+  parallel: true
   commands:
     gitleaks:
       run: gitleaks protect --staged --verbose
+    web-format:
+      root: web/
+      glob: "*.{ts,tsx,css,json}"
+      run: pnpm format {staged_files}
+      stage_fixed: true
+    web-check:
+      root: web/
+      glob: "*.{ts,tsx}"
+      run: pnpm exec tsc -p . && pnpm lint
+
+pre-push:
+  commands:
+    web-test:
+      root: web/
+      glob: "*.{ts,tsx}"
+      run: pnpm test

@@ -26,5 +26,9 @@
     "vite-plus": "1.0.0",
     "vitest": "^4.1.0",
     "wrangler": "^4.147.0"
-  }
+  },
+  "engines": {
+    "node": "24"
+  },
+  "packageManager": "pnpm@12.3.4"
 }
