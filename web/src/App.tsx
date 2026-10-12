@@ -1,4 +1,5 @@
 import { useState } from "react";
+import allowedHosts from "../allowed-hosts.json";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
 import { OembedPreview } from "./components/previews/OembedPreview";
 import { OgpPreview } from "./components/previews/OgpPreview";
@@ -34,6 +35,25 @@ export default function App() {
   return (
     <main className="app">
       <h1>カードリンクチェッカー</h1>
+      <p className="lead">
+        入力した URL が SNS や Slack でどう表示されるか（OGP・Xカード・oEmbed）を確認します。
+      </p>
+      <details
+        className="hosts"
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") e.currentTarget.open = false;
+        }}
+      >
+        <summary>許可されたドメインリスト</summary>
+        <ul>
+          {allowedHosts.hosts.map((h) => (
+            <li key={h}>{h}</li>
+          ))}
+        </ul>
+      </details>
       <UrlForm onSubmit={check} loading={loading} />
       {error && (
         <p className="notice error" role="alert">

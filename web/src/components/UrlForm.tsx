@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import allowedHosts from "../../allowed-hosts.json";
 import { isAllowedHost } from "../../lib/security/validateUrl";
+import { ClearIcon } from "./icons/ClearIcon";
+import { ClipboardIcon } from "./icons/ClipboardIcon";
 
 const ALLOWED_HOSTS = new Set(allowedHosts.hosts.map((h) => h.toLowerCase()));
 
@@ -13,6 +15,13 @@ export function UrlForm({
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function clear() {
+    setValue("");
+    setError(null);
+    inputRef.current?.focus();
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,25 +63,43 @@ export function UrlForm({
 
   return (
     <form className="url-form" onSubmit={submit}>
-      <input
-        type="url"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="https://hol1kgmg.com/"
-        required
-        disabled={loading}
-        aria-label="チェックするURL"
-      />
+      <div className="url-input">
+        <input
+          ref={inputRef}
+          type="url"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="https://hol1kgmg.com/"
+          required
+          disabled={loading}
+          aria-label="チェックするURL"
+        />
+        {value ? (
+          <button
+            type="button"
+            className="url-paste"
+            onClick={clear}
+            disabled={loading}
+            title="入力を消去"
+            aria-label="入力を消去"
+          >
+            <ClearIcon />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="url-paste"
+            onClick={fromClipboard}
+            disabled={loading}
+            title="クリップボードのURLでチェック"
+            aria-label="クリップボードのURLでチェック"
+          >
+            <ClipboardIcon />
+          </button>
+        )}
+      </div>
       <button type="submit" disabled={loading}>
         {loading ? "チェック中…" : "チェック"}
-      </button>
-      <button
-        type="button"
-        onClick={fromClipboard}
-        disabled={loading}
-        title="クリップボードのURLでチェック"
-      >
-        📋 貼り付けてチェック
       </button>
       {error && (
         <p className="notice error" role="alert">
