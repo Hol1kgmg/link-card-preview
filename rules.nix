@@ -6,5 +6,7 @@
   # registry/rules/hol1kgmg.nix
 
   # ./rules（独自）
+  "design-rules"
   "web-design-rules"
+  "preview-design-rules"
 ]
