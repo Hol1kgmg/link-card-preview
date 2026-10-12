@@ -1,9 +1,8 @@
 import { useState } from "react";
+import allowedHosts from "../../allowed-hosts.json";
+import { isAllowedHost } from "../../lib/security/validateUrl";
 
-const ALLOWED_HOSTS = (import.meta.env.VITE_ALLOWED_HOSTS as string | undefined)
-  ?.split(",")
-  .map((h) => h.trim().toLowerCase())
-  .filter(Boolean);
+const ALLOWED_HOSTS = new Set(allowedHosts.hosts.map((h) => h.toLowerCase()));
 
 export function UrlForm({
   onSubmit,
@@ -17,9 +16,25 @@ export function UrlForm({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    run(value);
+  }
+
+  async function fromClipboard() {
+    let text: string;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      setError("クリップボードを読み取れません（ブラウザの許可が必要です）");
+      return;
+    }
+    setValue(text.trim());
+    run(text);
+  }
+
+  function run(raw: string) {
     let url: URL;
     try {
-      url = new URL(value.trim());
+      url = new URL(raw.trim());
     } catch {
       setError("URLの形式が不正です");
       return;
@@ -28,8 +43,8 @@ export function UrlForm({
       setError("http / https のみ対応しています");
       return;
     }
-    // VITE_ALLOWED_HOSTS が設定されていれば送信前にドメインを弾く。最終判定はサーバ側
-    if (ALLOWED_HOSTS?.length && !ALLOWED_HOSTS.includes(url.hostname.toLowerCase())) {
+    // ここで弾くのは往復を省くためだけで、信頼はしない。最終判定はサーバ側
+    if (!isAllowedHost(url.hostname, ALLOWED_HOSTS)) {
       setError(`許可されていないドメインです: ${url.hostname}`);
       return;
     }
@@ -43,7 +58,7 @@ export function UrlForm({
         type="url"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="https://example.com/post/1"
+        placeholder="https://hol1kgmg.com/"
         required
         disabled={loading}
         aria-label="チェックするURL"
@@ -51,8 +66,17 @@ export function UrlForm({
       <button type="submit" disabled={loading}>
         {loading ? "チェック中…" : "チェック"}
       </button>
+      <button
+        type="button"
+        onClick={fromClipboard}
+        disabled={loading}
+        title="クリップボードのURLでチェック"
+      >
+        📋 貼り付けてチェック
+      </button>
       {error && (
-        <p className="error" role="alert">
+        <p className="notice error" role="alert">
+          <strong>エラー</strong>
           {error}
         </p>
       )}

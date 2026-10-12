@@ -5,6 +5,7 @@
   --ok: #2e8b57;
   --warn: #d08a00;
   --ng: #c0392b;
+  --info: #3b7dd8;
 }
 body {
   margin: 0;
@@ -42,9 +43,29 @@ h2 {
 .url-form .error {
   flex-basis: 100%;
 }
+/* 通知系の共通スタイル: 左罫線にレベル色、同系色の薄い背景 */
+.notice {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--level);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--level) 10%, transparent);
+}
+.notice strong {
+  color: var(--level);
+  margin-right: 4px;
+}
 .error {
-  color: var(--ng);
-  margin: 4px 0;
+  --level: var(--ng);
+}
+.issue-ng {
+  --level: var(--ng);
+}
+.issue-warn {
+  --level: var(--warn);
+}
+.fallbacks {
+  --level: var(--info);
 }
 .meta {
   font-size: 0.85rem;
@@ -54,9 +75,19 @@ h2 {
 
 .result {
   border: 1px solid var(--border);
+  border-left: 5px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
   margin: 16px 0;
+}
+.result-ok {
+  border-left-color: var(--ok);
+}
+.result-warn {
+  border-left-color: var(--warn);
+}
+.result-ng {
+  border-left-color: var(--ng);
 }
 .badge {
   font-size: 0.75rem;
@@ -137,17 +168,6 @@ h2 {
   padding-left: 0;
   list-style: none;
 }
-.issues li {
-  padding: 6px 10px;
-  border-left: 3px solid;
-  margin: 6px 0;
-}
-.issue-ng {
-  border-color: var(--ng);
-}
-.issue-warn {
-  border-color: var(--warn);
-}
 .hint {
   font-size: 0.85rem;
   opacity: 0.75;
@@ -155,7 +175,6 @@ h2 {
 }
 .fallbacks {
   font-size: 0.85rem;
-  opacity: 0.75;
 }
 
 details summary {

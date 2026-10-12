@@ -36,7 +36,8 @@ export default function App() {
       <h1>カードリンクチェッカー</h1>
       <UrlForm onSubmit={check} loading={loading} />
       {error && (
-        <p className="error" role="alert">
+        <p className="notice error" role="alert">
+          <strong>エラー</strong>
           {error}
         </p>
       )}

@@ -19,7 +19,7 @@ export function ResultSection({
   children: ReactNode;
 }) {
   return (
-    <section className="result">
+    <section className={`result result-${status}`}>
       <h2>
         {title} <span className={`badge badge-${status}`}>{LABEL[status]}</span>
       </h2>
@@ -27,7 +27,7 @@ export function ResultSection({
       {issues.length > 0 && (
         <ul className="issues">
           {issues.map((i) => (
-            <li key={i.code} className={`issue-${i.level}`}>
+            <li key={i.code} className={`notice issue-${i.level}`}>
               <strong>{i.level === "ng" ? "NG" : "警告"}</strong> {i.message}
               {i.hint && <div className="hint">→ {i.hint}</div>}
             </li>
@@ -35,7 +35,9 @@ export function ResultSection({
         </ul>
       )}
       {fallbacks && fallbacks.length > 0 && (
-        <p className="fallbacks">フォールバック（OGPで代用）: {fallbacks.join(", ")}</p>
+        <p className="notice fallbacks">
+          <strong>情報</strong>OGPで代用: {fallbacks.join(", ")}
+        </p>
       )}
       <details>
         <summary>検出したタグ ({Object.keys(tags).length})</summary>
