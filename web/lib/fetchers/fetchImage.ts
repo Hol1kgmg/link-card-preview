@@ -1,4 +1,5 @@
 import { imageSize } from "image-size";
+import { isAllowedHost } from "../security/validateUrl";
 import type { ImageInfo } from "../types";
 import { USER_AGENT } from "./fetchHtml";
 
@@ -6,7 +7,6 @@ const TIMEOUT_MS = 5000;
 // ponytail: 画像ヘッダ判定に十分な先頭バイト数。SVG など末尾まで要る形式は width/height が取れないまま返す
 const HEAD_BYTES = 64 * 1024;
 
-/** 画像の到達可否と寸法を先頭バイトだけ読んで判定。容量は Content-Length で見る */
 export async function fetchImage(url: string, allowed: Set<string>): Promise<ImageInfo> {
   const info: ImageInfo = { url, reachable: false };
   let target: URL;
@@ -15,7 +15,7 @@ export async function fetchImage(url: string, allowed: Set<string>): Promise<Ima
   } catch {
     return info;
   }
-  if (!allowed.has(target.hostname.toLowerCase())) return info;
+  if (!isAllowedHost(target.hostname, allowed)) return info;
 
   try {
     const res = await fetch(target, {

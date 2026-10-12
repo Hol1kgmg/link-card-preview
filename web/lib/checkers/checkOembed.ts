@@ -28,7 +28,7 @@ export function checkOembed(
       ng(
         "OEMBED_HOST_NOT_ALLOWED",
         "エンドポイントのドメインが許可外です",
-        "ALLOWED_ASSET_HOSTS に追加",
+        "allowed-hosts.json の assetHosts に追加",
       );
       break;
     case "timeout":

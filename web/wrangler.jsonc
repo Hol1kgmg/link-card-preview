@@ -8,10 +8,5 @@
     "directory": "./dist",
     "run_worker_first": ["/api/*"],
   },
-  "vars": {
-    // 仮置き。自分のサイトのドメインに差し替える
-    "ALLOWED_HOSTS": "example.com,www.example.com",
-    // 画像・oEmbed の取得先として追加で許可するドメイン（CDN など）
-    "ALLOWED_ASSET_HOSTS": "",
-  },
+  // 許可ドメインを vars に置かないのは、フロントと同じ allowed-hosts.json を参照させるため
 }

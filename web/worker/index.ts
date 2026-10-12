@@ -5,14 +5,11 @@ import { fetchHtml, UpstreamError } from "../lib/fetchers/fetchHtml";
 import { fetchImage } from "../lib/fetchers/fetchImage";
 import { fetchOembed } from "../lib/fetchers/fetchOembed";
 import { parseMeta } from "../lib/parsers/parseMeta";
-import { parseHosts, validateUrl } from "../lib/security/validateUrl";
+import { validateUrl } from "../lib/security/validateUrl";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
+import allowedHosts from "../allowed-hosts.json";
 
-export interface Env {
-  ALLOWED_HOSTS: string;
-  ALLOWED_ASSET_HOSTS: string;
-  ASSETS?: Fetcher;
-}
+export type HostConfig = { hosts: string[]; assetHosts: string[] };
 
 const STATUS_BY_CODE: Record<string, number> = {
   INVALID_URL: 400,
@@ -26,7 +23,7 @@ function error(code: string, message: string): Response {
   return Response.json(body, { status: STATUS_BY_CODE[code] ?? 500 });
 }
 
-export async function handleCheck(req: Request, env: Env): Promise<Response> {
+export async function handleCheck(req: Request, cfg: HostConfig = allowedHosts): Promise<Response> {
   let input: unknown;
   try {
     input = await req.json();
@@ -37,8 +34,8 @@ export async function handleCheck(req: Request, env: Env): Promise<Response> {
     typeof input === "object" && input !== null ? (input as { url?: unknown }).url : undefined;
   if (typeof raw !== "string") return error("INVALID_URL", "url が指定されていません");
 
-  const pageHosts = parseHosts(env.ALLOWED_HOSTS);
-  const assetHosts = new Set([...pageHosts, ...parseHosts(env.ALLOWED_ASSET_HOSTS)]);
+  const pageHosts = new Set(cfg.hosts.map((h) => h.toLowerCase()));
+  const assetHosts = new Set([...pageHosts, ...cfg.assetHosts.map((h) => h.toLowerCase())]);
 
   const v = validateUrl(raw, pageHosts);
   if (!v.ok) return error(v.code, v.message);
@@ -57,7 +54,6 @@ export async function handleCheck(req: Request, env: Env): Promise<Response> {
   const ogImageUrl = meta.og["og:image"];
   const twImageUrl = tw.image;
 
-  // 画像と oEmbed は並列。画像URLが同じなら1回で済ます
   const [ogImage, twImage, oembedResult] = await Promise.all([
     ogImageUrl && /^https?:\/\//i.test(ogImageUrl) ? fetchImage(ogImageUrl, assetHosts) : undefined,
     twImageUrl && twImageUrl !== ogImageUrl && /^https?:\/\//i.test(twImageUrl)
@@ -82,12 +78,12 @@ export async function handleCheck(req: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req) {
     const { pathname } = new URL(req.url);
     if (pathname === "/api/check") {
       if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
-      return handleCheck(req, env);
+      return handleCheck(req);
     }
     return new Response("Not Found", { status: 404 });
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler;

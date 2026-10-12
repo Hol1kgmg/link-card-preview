@@ -1,3 +1,4 @@
+import { isAllowedHost } from "../security/validateUrl";
 import { USER_AGENT } from "./fetchHtml";
 
 const TIMEOUT_MS = 5000;
@@ -20,7 +21,7 @@ export async function fetchOembed(
   } catch {
     return { kind: "network", message: "エンドポイントのURLが不正です" };
   }
-  if (!allowed.has(target.hostname.toLowerCase())) return { kind: "not_allowed" };
+  if (!isAllowedHost(target.hostname, allowed)) return { kind: "not_allowed" };
 
   let res: Response;
   try {

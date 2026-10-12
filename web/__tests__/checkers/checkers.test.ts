@@ -180,5 +180,10 @@ describe("validateUrl", () => {
       code: "DOMAIN_NOT_ALLOWED",
     });
     expect(validateUrl("https://EXAMPLE.com/x", allowed)).toMatchObject({ ok: true });
+    expect(validateUrl("https://blog.example.com/x", allowed)).toMatchObject({ ok: true });
+    expect(validateUrl("https://notexample.com/x", allowed)).toMatchObject({
+      ok: false,
+      code: "DOMAIN_NOT_ALLOWED",
+    });
   });
 });

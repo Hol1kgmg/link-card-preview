@@ -1,12 +1,11 @@
-import { env as rawEnv } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
-import { type Env, handleCheck } from "../worker";
+import { handleCheck, type HostConfig } from "../worker";
 import full from "./fixtures/full.html?raw";
 
-const env = rawEnv as unknown as Env;
+// テストは allowed-hosts.json の実ドメインに依存しないよう許可リストを固定する
+const cfg: HostConfig = { hosts: ["example.com"], assetHosts: [] };
 
-// 1x1 PNG（寸法判定用）
 const PNG_1x1 = Uint8Array.from(
   atob(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -14,7 +13,7 @@ const PNG_1x1 = Uint8Array.from(
   (c) => c.charCodeAt(0),
 );
 
-/** URL → Response の表で外部 fetch を差し替える。表に無い URL は呼ばれたら失敗 */
+// vitest-pool-workers 0.22 で fetchMock が廃止されたため、グローバル fetch を直接差し替える
 function mockFetch(routes: Record<string, () => Response>) {
   const calls: string[] = [];
   vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
@@ -35,7 +34,7 @@ const post = (url: unknown) =>
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }),
-    env,
+    cfg,
   );
 
 const html = (body: string) =>
@@ -52,14 +51,13 @@ describe("POST /api/check", () => {
   });
 
   it("follows redirect within allowed hosts and checks all three cards", async () => {
-    expect(env.ALLOWED_HOSTS).toContain("example.com");
     const calls = mockFetch({
       "https://example.com/old": () =>
         new Response(null, { status: 301, headers: { location: "/post/1" } }),
       "https://example.com/post/1": () => html(full),
       "https://example.com/oembed": () =>
         Response.json({ version: "1.0", type: "link", title: "T" }),
-      // cdn.example.com は ALLOWED_ASSET_HOSTS に無いので fetch されない
+      "https://cdn.example.com/og.png": () => new Response(null, { status: 404 }),
     });
     const res = await post("https://example.com/old");
     expect(res.status).toBe(200);
@@ -70,7 +68,8 @@ describe("POST /api/check", () => {
     expect(body.twitter.fallbacks).toContain("twitter:image");
     expect(body.oembed.status).toBe("warn");
     expect(body.oembed.issues.map((i) => i.code)).toEqual(["OEMBED_THUMBNAIL_MISSING"]);
-    expect(calls.some((u) => u.includes("cdn.example.com"))).toBe(false);
+    expect(calls).toContain("https://cdn.example.com/og.png");
+    expect(body.ogp.issues.map((i) => i.code)).toContain("OG_IMAGE_UNREACHABLE");
   });
 
   it("blocks redirect to a disallowed host", async () => {

@@ -9,6 +9,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "resolveJsonModule": true,
     "types": [
       "@cloudflare/workers-types/2023-07-01",
       "@cloudflare/vitest-pool-workers/types",

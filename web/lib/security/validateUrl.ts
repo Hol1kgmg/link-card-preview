@@ -1,15 +1,13 @@
 export type UrlError = "INVALID_URL" | "DOMAIN_NOT_ALLOWED";
 
-export function parseHosts(csv: string | undefined): Set<string> {
-  return new Set(
-    (csv ?? "")
-      .split(",")
-      .map((h) => h.trim().toLowerCase())
-      .filter(Boolean),
-  );
+export function isAllowedHost(host: string, allowed: Set<string>): boolean {
+  const h = host.toLowerCase();
+  for (const a of allowed) {
+    if (h === a || h.endsWith(`.${a}`)) return true;
+  }
+  return false;
 }
 
-/** 形式・プロトコル・IP直指定/localhost を検査。許可ドメイン外は DOMAIN_NOT_ALLOWED */
 export function validateUrl(
   input: string,
   allowed: Set<string>,
@@ -27,7 +25,7 @@ export function validateUrl(
   if (host === "localhost" || host.endsWith(".localhost") || isIpLiteral(host)) {
     return { ok: false, code: "INVALID_URL", message: "IPアドレスや localhost は指定できません" };
   }
-  if (!allowed.has(host)) {
+  if (!isAllowedHost(host, allowed)) {
     return {
       ok: false,
       code: "DOMAIN_NOT_ALLOWED",
