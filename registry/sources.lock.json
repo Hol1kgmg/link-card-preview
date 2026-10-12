@@ -38,6 +38,25 @@
       },
       "subdir": "."
     },
+    "emilkowalski": {
+      "filter": {
+        "maxDepth": null,
+        "nameRegex": null
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "emilkowalski",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
     "hol1kgmg": {
       "filter": {
         "maxDepth": null,
@@ -142,6 +161,19 @@
         "type": "Git",
         "url": null
       },
+      "emilkowalski": {
+        "branch": "main",
+        "hash": "sha256-4/xWVt4HqB1nwqdLMFC3No07vkEWqRcQDtqNY8FHwh8=",
+        "repository": {
+          "owner": "emilkowalski",
+          "repo": "skills",
+          "type": "GitHub"
+        },
+        "revision": "2d228630ba1446365f614a108cb8252f1feda202",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/emilkowalski/skills/archive/2d228630ba1446365f614a108cb8252f1feda202.tar.gz"
+      },
       "hol1kgmg": {
         "branch": "main",
         "hash": "sha256-PdSdE9fquZO7tgW1ZOxRxahwoT4sgGDU7glb1xHSw2c=",
@@ -169,16 +201,16 @@
       },
       "vercel": {
         "branch": "main",
-        "hash": "sha256-tiukbcseL+XExjMljyMOHH4Q4/5j14DFCqXmwBvVjHI=",
+        "hash": "sha256-mRrpLj5yVkMqlbG3CAAeq04PLEmrCixMsc8DNrqn9rc=",
         "repository": {
           "owner": "vercel",
           "repo": "ai",
           "type": "GitHub"
         },
-        "revision": "5a3c13cbb00de3b641af7b34bded5cfeaef286d5",
+        "revision": "ba05943b69ad070558bb5bc912da99ec66d7d263",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/vercel/ai/archive/5a3c13cbb00de3b641af7b34bded5cfeaef286d5.tar.gz"
+        "url": "https://github.com/vercel/ai/archive/ba05943b69ad070558bb5bc912da99ec66d7d263.tar.gz"
       },
       "web-quality": {
         "branch": "main",

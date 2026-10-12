@@ -6,4 +6,5 @@
   # registry/rules/hol1kgmg.nix
 
   # ./rules（独自）
+  "web-design-rules"
 ]

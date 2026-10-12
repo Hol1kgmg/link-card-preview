@@ -23,6 +23,9 @@
   "seo"
   "best-practices"
 
+  # emilkowalski/skills
+  "apple-design"
+
   # Hol1kgmg/skills（必要なリポジトリで有効化する）
   # "dependabot-review"
   # "speckit-explain"
