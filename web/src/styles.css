@@ -180,6 +180,25 @@ h2 {
   color: var(--text-soft);
   word-break: break-all;
 }
+.prompt-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  color: var(--action);
+  background: none;
+  border: 1px solid var(--action);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.prompt-copy svg {
+  flex: none;
+  font-size: 1.1rem;
+}
+.prompt-copy:active {
+  transform: scale(0.97);
+}
 
 .result {
   border: 1px solid var(--border);

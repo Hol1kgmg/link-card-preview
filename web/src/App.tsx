@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
+import { OgImagePromptButton } from "./components/OgImagePromptButton";
 import { OembedPreview } from "./components/previews/OembedPreview";
 import { OgpPreview } from "./components/previews/OgpPreview";
 import { TwitterPreview } from "./components/previews/TwitterPreview";
@@ -60,6 +61,7 @@ export default function App() {
             取得先: <a href={result.finalUrl}>{result.finalUrl}</a> /{" "}
             {new Date(result.fetchedAt).toLocaleString()}
           </p>
+          <OgImagePromptButton result={result} />
           <ResultSection
             title="OGP"
             status={result.ogp.status}
