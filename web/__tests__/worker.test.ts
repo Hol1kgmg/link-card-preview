@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
-import { handleCheck, type HostConfig, selfAwareFetch } from "../worker";
+import worker, { handleCheck, selfAwareFetch } from "../worker";
 import full from "./fixtures/full.html?raw";
-
-// テストは allowed-hosts.json の実ドメインに依存しないよう許可リストを固定する
-const cfg: HostConfig = { hosts: ["example.com"], assetHosts: [] };
 
 const PNG_1x1 = Uint8Array.from(
   atob(
@@ -34,23 +31,22 @@ const post = (url: unknown) =>
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
     }),
-    cfg,
   );
 
 const html = (body: string) =>
   new Response(body, { headers: { "content-type": "text/html; charset=utf-8" } });
 
 describe("POST /api/check", () => {
-  it("rejects invalid / disallowed urls before any fetch", async () => {
+  it("rejects invalid urls and ip literals before any fetch", async () => {
     const calls = mockFetch({});
     expect((await post("nope")).status).toBe(400);
-    const r = await post("https://evil.com/");
-    expect(r.status).toBe(403);
-    expect(((await r.json()) as ErrorResponse).error.code).toBe("DOMAIN_NOT_ALLOWED");
+    const r = await post("http://127.0.0.1/");
+    expect(r.status).toBe(400);
+    expect(((await r.json()) as ErrorResponse).error.code).toBe("INVALID_URL");
     expect(calls).toEqual([]);
   });
 
-  it("follows redirect within allowed hosts and checks all three cards", async () => {
+  it("follows redirect and checks all three cards", async () => {
     const calls = mockFetch({
       "https://example.com/old": () =>
         new Response(null, { status: 301, headers: { location: "/post/1" } }),
@@ -72,13 +68,26 @@ describe("POST /api/check", () => {
     expect(body.ogp.issues.map((i) => i.code)).toContain("OG_IMAGE_UNREACHABLE");
   });
 
-  it("blocks redirect to a disallowed host", async () => {
-    mockFetch({
+  it("blocks redirect to an ip literal", async () => {
+    const calls = mockFetch({
       "https://example.com/r": () =>
-        new Response(null, { status: 302, headers: { location: "https://evil.com/" } }),
+        new Response(null, { status: 302, headers: { location: "http://169.254.169.254/" } }),
     });
     const r = await post("https://example.com/r");
-    expect(r.status).toBe(403);
+    expect(r.status).toBe(502);
+    expect(calls).toEqual(["https://example.com/r"]);
+  });
+
+  it("checks pages on any public host", async () => {
+    mockFetch({ "https://other-site.org/": () => html(full) });
+    expect((await post("https://other-site.org/")).status).toBe(200);
+  });
+
+  it("redirects /api/login back to the top page", async () => {
+    const req = new Request("https://app.local/api/login") as Parameters<typeof worker.fetch>[0];
+    const res = await worker.fetch(req, { ASSETS: {} as Fetcher });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("https://app.local/");
   });
 
   it("returns 502 for non-html upstream", async () => {
@@ -117,7 +126,6 @@ describe("POST /api/check", () => {
     const assets = { fetch: async () => html(`<html><head><title>me</title></head></html>`) };
     const res = await handleCheck(
       req,
-      { hosts: ["app.local"], assetHosts: [] },
       selfAwareFetch(req, { ASSETS: assets as unknown as Fetcher }),
     );
     expect(res.status).toBe(200);

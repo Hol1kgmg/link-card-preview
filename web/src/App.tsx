@@ -1,5 +1,4 @@
-import { useState } from "react";
-import allowedHosts from "../allowed-hosts.json";
+import { type ReactNode, useState } from "react";
 import type { CheckResponse, ErrorResponse } from "../lib/types";
 import { OembedPreview } from "./components/previews/OembedPreview";
 import { OgpPreview } from "./components/previews/OgpPreview";
@@ -9,7 +8,7 @@ import { UrlForm } from "./components/UrlForm";
 
 export default function App() {
   const [result, setResult] = useState<CheckResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ReactNode>(null);
   const [loading, setLoading] = useState(false);
 
   async function check(url: string) {
@@ -21,7 +20,17 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
+        // 未ログインだと Access が別オリジンのログイン画面へ飛ばし、追従すると CORS エラーで理由が分からなくなる
+        redirect: "manual",
       });
+      if (res.type === "opaqueredirect") {
+        setError(
+          <>
+            チェックするには<a href="/api/login">ログイン</a>が必要です
+          </>,
+        );
+        return;
+      }
       const json = (await res.json()) as CheckResponse | ErrorResponse;
       if ("error" in json) setError(`${json.error.code}: ${json.error.message}`);
       else setResult(json);
@@ -38,22 +47,6 @@ export default function App() {
       <p className="lead">
         入力した URL が SNS や Slack でどう表示されるか（OGP・Xカード・oEmbed）を確認します。
       </p>
-      <details
-        className="hosts"
-        onBlur={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false;
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") e.currentTarget.open = false;
-        }}
-      >
-        <summary>許可されたドメインリスト</summary>
-        <ul>
-          {allowedHosts.hosts.map((h) => (
-            <li key={h}>{h}</li>
-          ))}
-        </ul>
-      </details>
       <UrlForm onSubmit={check} loading={loading} />
       {error && (
         <p className="notice error" role="alert">

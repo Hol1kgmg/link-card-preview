@@ -7,17 +7,17 @@ const MAX_REDIRECTS = 5;
 
 export class UpstreamError extends Error {
   constructor(
-    public code: "UPSTREAM_ERROR" | "UPSTREAM_TIMEOUT" | "DOMAIN_NOT_ALLOWED",
+    public code: "UPSTREAM_ERROR" | "UPSTREAM_TIMEOUT",
     message: string,
   ) {
     super(message);
   }
 }
 
-// redirect: "follow" にしないのは、移動先ごとに許可ドメインを検査するため（SSRF 対策）
+// redirect: "follow" にしないのは、移動先ごとに IP 直指定や localhost を検査するため（SSRF 対策）
 export async function fetchHtml(
   start: URL,
-  allowed: Set<string>,
+  allowLocalhost: boolean,
   fetchFn: typeof fetch = fetch,
 ): Promise<{ html: string; finalUrl: string }> {
   let url = start;
@@ -40,9 +40,9 @@ export async function fetchHtml(
       const loc = res.headers.get("location");
       if (!loc) throw new UpstreamError("UPSTREAM_ERROR", "Location ヘッダのないリダイレクトです");
       const next = new URL(loc, url);
-      const v = validateUrl(next.href, allowed);
+      const v = validateUrl(next.href, allowLocalhost);
       if (!v.ok)
-        throw new UpstreamError("DOMAIN_NOT_ALLOWED", `リダイレクト先が許可外です: ${next.host}`);
+        throw new UpstreamError("UPSTREAM_ERROR", `リダイレクト先を取得できません: ${v.message}`);
       url = v.url;
       continue;
     }

@@ -61,54 +61,10 @@ h1 {
   margin-bottom: 4px;
 }
 .lead {
-  margin: 0 0 4px;
+  margin: 0 0 16px;
   font-size: 0.9rem;
   line-height: 1.6;
   color: var(--text-soft);
-}
-.hosts {
-  position: relative;
-  margin: 0 0 16px;
-  font-size: 0.85rem;
-  color: var(--text-soft);
-}
-.hosts summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  list-style: none;
-  color: var(--action);
-  cursor: pointer;
-}
-.hosts summary::-webkit-details-marker {
-  display: none;
-}
-.hosts summary::after {
-  content: "i";
-  width: 1em;
-  height: 1em;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-size: 0.75em;
-  font-weight: 600;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.hosts ul {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1;
-  margin: 4px 0 0;
-  padding: 8px 12px 8px 28px;
-  white-space: nowrap;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 12%, transparent);
 }
 h2 {
   font-size: 1.1rem;

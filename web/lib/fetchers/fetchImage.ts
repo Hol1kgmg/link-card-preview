@@ -1,5 +1,5 @@
 import { imageSize } from "image-size";
-import { isAllowedHost } from "../security/validateUrl";
+import { validateUrl } from "../security/validateUrl";
 import type { ImageInfo } from "../types";
 import { USER_AGENT } from "./fetchHtml";
 
@@ -9,20 +9,15 @@ const HEAD_BYTES = 64 * 1024;
 
 export async function fetchImage(
   url: string,
-  allowed: Set<string>,
+  allowLocalhost: boolean,
   fetchFn: typeof fetch = fetch,
 ): Promise<ImageInfo> {
   const info: ImageInfo = { url, reachable: false };
-  let target: URL;
-  try {
-    target = new URL(url);
-  } catch {
-    return info;
-  }
-  if (!isAllowedHost(target.hostname, allowed)) return info;
+  const v = validateUrl(url, allowLocalhost);
+  if (!v.ok) return info;
 
   try {
-    const res = await fetchFn(target, {
+    const res = await fetchFn(v.url, {
       headers: { "User-Agent": USER_AGENT },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

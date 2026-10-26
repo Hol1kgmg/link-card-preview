@@ -1,10 +1,9 @@
-import { isAllowedHost } from "../security/validateUrl";
+import { validateUrl } from "../security/validateUrl";
 import { USER_AGENT } from "./fetchHtml";
 
 const TIMEOUT_MS = 5000;
 
 export type OembedFetchResult =
-  | { kind: "not_allowed" }
   | { kind: "timeout" }
   | { kind: "network"; message: string }
   | { kind: "http"; status: number }
@@ -13,20 +12,15 @@ export type OembedFetchResult =
 
 export async function fetchOembed(
   endpoint: string,
-  allowed: Set<string>,
+  allowLocalhost: boolean,
   fetchFn: typeof fetch = fetch,
 ): Promise<OembedFetchResult> {
-  let target: URL;
-  try {
-    target = new URL(endpoint);
-  } catch {
-    return { kind: "network", message: "エンドポイントのURLが不正です" };
-  }
-  if (!isAllowedHost(target.hostname, allowed)) return { kind: "not_allowed" };
+  const v = validateUrl(endpoint, allowLocalhost);
+  if (!v.ok) return { kind: "network", message: v.message };
 
   let res: Response;
   try {
-    res = await fetchFn(target, {
+    res = await fetchFn(v.url, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

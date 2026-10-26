@@ -4,7 +4,7 @@ import { checkOgp } from "../../lib/checkers/checkOgp";
 import { checkTwitter } from "../../lib/checkers/checkTwitter";
 import { summarize } from "../../lib/checkers/summarize";
 import { parseMeta } from "../../lib/parsers/parseMeta";
-import { validateUrl, withLocalhost } from "../../lib/security/validateUrl";
+import { isLocalhost, validateUrl } from "../../lib/security/validateUrl";
 import full from "../fixtures/full.html?raw";
 
 const codes = (r: { issues: { code: string }[] }) => r.issues.map((i) => i.code);
@@ -159,38 +159,32 @@ describe("checkOembed", () => {
 });
 
 describe("validateUrl", () => {
-  const allowed = new Set(["example.com"]);
-  it("rejects bad input, ip, localhost, foreign host", () => {
-    expect(validateUrl("not a url", allowed)).toMatchObject({ ok: false, code: "INVALID_URL" });
-    expect(validateUrl("ftp://example.com", allowed)).toMatchObject({
+  it("rejects bad input, ip, localhost", () => {
+    expect(validateUrl("not a url", false)).toMatchObject({ ok: false, code: "INVALID_URL" });
+    expect(validateUrl("ftp://example.com", false)).toMatchObject({
       ok: false,
       code: "INVALID_URL",
     });
-    expect(validateUrl("http://127.0.0.1/", allowed)).toMatchObject({
+    expect(validateUrl("http://127.0.0.1/", false)).toMatchObject({
       ok: false,
       code: "INVALID_URL",
     });
-    expect(validateUrl("http://[::1]/", allowed)).toMatchObject({ ok: false, code: "INVALID_URL" });
-    expect(validateUrl("http://localhost/", allowed)).toMatchObject({
+    expect(validateUrl("http://[::1]/", false)).toMatchObject({ ok: false, code: "INVALID_URL" });
+    expect(validateUrl("http://localhost/", false)).toMatchObject({
       ok: false,
       code: "INVALID_URL",
     });
-    expect(
-      validateUrl("http://localhost:3000/", withLocalhost(allowed, "localhost")),
-    ).toMatchObject({ ok: true });
-    expect(validateUrl("http://127.0.0.1/", withLocalhost(allowed, "localhost"))).toMatchObject({
-      ok: false,
-    });
-    expect(withLocalhost(allowed, "example.com").has("localhost")).toBe(false);
-    expect(validateUrl("https://evil.com/", allowed)).toMatchObject({
-      ok: false,
-      code: "DOMAIN_NOT_ALLOWED",
-    });
-    expect(validateUrl("https://EXAMPLE.com/x", allowed)).toMatchObject({ ok: true });
-    expect(validateUrl("https://blog.example.com/x", allowed)).toMatchObject({ ok: true });
-    expect(validateUrl("https://notexample.com/x", allowed)).toMatchObject({
-      ok: false,
-      code: "DOMAIN_NOT_ALLOWED",
-    });
+  });
+
+  it("accepts any public host", () => {
+    expect(validateUrl("https://example.com/x", false)).toMatchObject({ ok: true });
+    expect(validateUrl("https://other-site.org/", false)).toMatchObject({ ok: true });
+  });
+
+  it("allows localhost only when the viewer itself runs on localhost", () => {
+    expect(validateUrl("http://localhost:3000/", true)).toMatchObject({ ok: true });
+    expect(validateUrl("http://127.0.0.1/", true)).toMatchObject({ ok: false });
+    expect(isLocalhost("localhost")).toBe(true);
+    expect(isLocalhost("example.com")).toBe(false);
   });
 });

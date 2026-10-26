@@ -1,13 +1,6 @@
 import { useRef, useState } from "react";
-import allowedHosts from "../../allowed-hosts.json";
-import { isAllowedHost, withLocalhost } from "../../lib/security/validateUrl";
 import { ClearIcon } from "./icons/ClearIcon";
 import { ClipboardIcon } from "./icons/ClipboardIcon";
-
-const ALLOWED_HOSTS = withLocalhost(
-  new Set(allowedHosts.hosts.map((h) => h.toLowerCase())),
-  location.hostname,
-);
 
 export function UrlForm({
   onSubmit,
@@ -53,11 +46,6 @@ export function UrlForm({
     }
     if (url.protocol !== "https:" && url.protocol !== "http:") {
       setError("http / https のみ対応しています");
-      return;
-    }
-    // ここで弾くのは往復を省くためだけで、信頼はしない。最終判定はサーバ側
-    if (!isAllowedHost(url.hostname, ALLOWED_HOSTS)) {
-      setError(`許可されていないドメインです: ${url.hostname}`);
       return;
     }
     setError(null);

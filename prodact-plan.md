@@ -9,7 +9,7 @@ Oct 3, 2026 · @Hol1kgmg
 | 項目 | 内容 |
 | --- | --- |
 | 対象ユーザー | サイトの作成者本人 |
-| チェック対象 | 自分のサイトのページ（許可ドメインに限定） |
+| チェック対象 | 任意の公開サイトのページ（チェックの実行は Cloudflare Access でログインした本人に限定） |
 | 対応カード | OGP / Xカード / oEmbed |
 | 対象外（初版） | 複数URLの一括チェック、履歴保存、JSON-LDの検証、JS実行後のHTMLの解析 |
 | デプロイ先 | Cloudflare Workers |
@@ -21,7 +21,8 @@ Oct 3, 2026 · @Hol1kgmg
 **入力エリア**
 
 - URL入力欄と「チェック」ボタン
-- 入力値が不正な場合（URL形式でない、許可外のドメイン）は、送信前にエラーを表示
+- 入力値が不正な場合（URL形式でない、http / https 以外）は、送信前にエラーを表示
+- 未ログインでチェックした場合は、ログインへのリンクを表示
 - チェック中はボタンを無効化し、ローディングを表示
 
 **各セクションの表示内容**
@@ -169,9 +170,8 @@ type CheckResponse = {
 
 | HTTPステータス | 発生条件 | `error.code` |
 | --- | --- | --- |
-| 400 | URLの形式が不正 | `INVALID_URL` |
-| 403 | 許可ドメイン外 | `DOMAIN_NOT_ALLOWED` |
-| 502 | 対象ページが200以外を返した、またはHTMLではなかった | `UPSTREAM_ERROR` |
+| 400 | URLの形式が不正、IPアドレス直接指定、`localhost` | `INVALID_URL` |
+| 502 | 対象ページが200以外を返した、HTMLではなかった、またはリダイレクト先がIPアドレス・`localhost` | `UPSTREAM_ERROR` |
 | 504 | 対象ページの取得がタイムアウト | `UPSTREAM_TIMEOUT` |
 
 エラー時の本文は `{ "error": { "code": string, "message": string } }` とする。画像やoEmbedの取得失敗はエラーレスポンスにせず、各セクションの `issues` に入れて200で返す。
@@ -197,7 +197,7 @@ worker/
 lib/                       フロントとWorkerで共有
   types.ts                 フロントとBFFで共有する型
   security/
-    validateUrl.ts         URL形式・許可ドメインの検証
+    validateUrl.ts         URL形式・IPアドレス・localhost の検証
   fetchers/
     fetchHtml.ts           HTML取得（タイムアウト・サイズ上限付き）
     fetchImage.ts          画像の取得可否とサイズ判定
@@ -213,25 +213,24 @@ lib/                       フロントとWorkerで共有
 __tests__/
   checkers/                判定ロジックの単体テスト
   fixtures/                テスト用のHTML
-wrangler.jsonc             Cloudflare設定（assets、run_worker_first、許可ドメインなどの環境変数）
+wrangler.jsonc             Cloudflare設定（assets、run_worker_first、workers.dev とプレビュー URL の無効化）
 vite.config.ts             Vite / Vitest（workers pool）設定
 ```
 
 ## 非機能要件・セキュリティ
 
-最優先は、BFFが任意のURLへアクセスする「踏み台」として悪用されること（SSRF）を防ぐこと。そのため、チェックできるURLを許可ドメインに限定する。
+最優先は、BFFが任意のURLへアクセスする「踏み台」として悪用されること（SSRF）を防ぐこと。チェック対象のドメインは制限しない代わりに、APIを呼べる人を Cloudflare Access で本人に限定する。
 
 | 項目 | 仕様 |
 | --- | --- |
-| 許可ドメイン | 環境変数 `ALLOWED_HOSTS`（カンマ区切り）で指定。ページ本体は許可ドメインのみ取得する |
-| リダイレクト | 自動追従せず手動で最大5回まで追う。移動先も毎回許可ドメインか確認する |
-| 画像・oEmbedの取得先 | CDNなど別ドメインの場合があるため、`ALLOWED_ASSET_HOSTS` で別途許可する |
-| プロトコル | `https:` と `http:` のみ。IPアドレス直接指定と `localhost` は拒否 |
+| アクセス制限 | Cloudflare Access で `/api/*` だけを保護し、本人のメールアドレスのみ許可する。画面は誰でも開ける。`GET /api/login` はログイン後に `/` へ戻すための入口 |
+| 抜け道の封鎖 | Access はカスタムドメインにしか掛からないため、`wrangler.jsonc` で `workers_dev` と `preview_urls` を無効にする |
+| リダイレクト | 自動追従せず手動で最大5回まで追う。移動先も毎回IPアドレス・`localhost` でないか確認する |
+| プロトコル | `https:` と `http:` のみ。IPアドレス直接指定と `localhost` は拒否（ページ本体・画像・oEmbed とも）。ビューワー自身を localhost で動かしているときだけ `localhost` を許可する |
 | タイムアウト | HTML 5秒、画像・oEmbed 各5秒（`AbortSignal.timeout` を使用） |
 | サイズ上限 | HTMLは先頭2MBまで読む。画像はサイズ判定に必要な先頭部分だけ読み、容量は `Content-Length` で確認 |
 | User-Agent | 独自のUA（例：`CardLinkChecker/1.0`）を付ける。SNSクローラーのUAを切り替える機能は初版では入れない |
-| レート制限 | 初版は無し。外部公開する場合はCloudflareの Rate Limiting ルールで対応 |
-| アクセス制限 | 自分だけが使う前提なら Cloudflare Access で保護すると安全 |
+| レート制限 | 初版は無し。Access で本人に限定しているため不要。外部公開する場合はCloudflareの Rate Limiting ルールで対応 |
 
 実行環境はCloudflare Workersのため、Node.js専用のライブラリ（`jsdom` など）は使わず、Web標準の `fetch` と Workersで動くライブラリに限定する。
 
@@ -239,15 +238,13 @@ vite.config.ts             Vite / Vitest（workers pool）設定
 
 **未決事項**
 
-- [ ] 許可ドメイン（`ALLOWED_HOSTS`）に入れる自分のサイトのドメイン
-- [ ] 画像を配信しているCDNのドメインの有無
-- [ ] アプリをCloudflare Accessで自分専用にするかどうか
 - [ ] Vite+ 同梱のVitestと `@cloudflare/vitest-pool-workers` のバージョン互換（初期セットアップ時に `vp test` で確認。合わなければVitestを単体で入れる）
 
 **決定済み**
 
 - HTML解析は `HTMLRewriter`（`cheerio` は不採用。workers pool でテストできるため）
 - Next.js / OpenNext、TanStack Redact は不採用
+- チェック対象のドメインは制限せず、Cloudflare Access で `/api/*` を本人専用にする（許可ドメインのリストは廃止）
 
 **今後の拡張候補**
 

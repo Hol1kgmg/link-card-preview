@@ -24,13 +24,6 @@ export function checkOembed(
 
   let data: Record<string, unknown> | null = null;
   switch (result.kind) {
-    case "not_allowed":
-      ng(
-        "OEMBED_HOST_NOT_ALLOWED",
-        "エンドポイントのドメインが許可外です",
-        "allowed-hosts.json の assetHosts に追加",
-      );
-      break;
     case "timeout":
       ng("OEMBED_TIMEOUT", "エンドポイントの取得がタイムアウトしました");
       break;
